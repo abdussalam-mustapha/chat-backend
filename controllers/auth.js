@@ -2,6 +2,8 @@ const jwt = require("jsonwebtoken")
 const otpGenerator = require("otp-generator")
 const crypto = require("crypto")
 
+const mailService = require("../services/mailer")
+
 
 const User = require("../models/user")
 const filterObj = require("../utils/filterObj")
@@ -59,6 +61,13 @@ exports.sendOTP = async (req, res, next) => {
     })
 
     // send email
+
+    mailService.sendEmail({
+        from: "abdussalammustapha07@gmail.com",
+        to: "example@gmail.com",
+        subject: "OTP for chatNow",
+        text: `your OTP is ${new_otp}, this is valid for 10 mins`
+    })
 
     res.status(200).json({
         status: "success",
@@ -138,7 +147,7 @@ exports.protect = async (req, res, next) => {
     // getting token (JWT) and check if its actually there
     let token
 
-    if(req.headers.authorization && req.headers.authorization.startsWith("Bearer")){
+    if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
         token = req.headers.authorization.split(" ")[1];
     }
     else if (req.cookies.jwt) {
@@ -161,7 +170,7 @@ exports.protect = async (req, res, next) => {
 
     const this_user = await User.findById(decoded.userId);
 
-    if(!this_user) {
+    if (!this_user) {
         res.status(400).json({
             status: "success",
             message: "the user doesn't exist"
