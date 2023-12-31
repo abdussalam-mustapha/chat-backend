@@ -1,49 +1,31 @@
-const sgMail = require("@sendgrid/mail")
-
-const dotenv = require("dotenv")
-
-dotenv.config({path: "../config.env"})
 
 
-sgMail.setApiKey(process.env.SG_KEY)
-
-const sendSGMail = async ({
-    recipient,
-    sender,
-    subject,
-    html,
-    text,
-    attachments,
-}) => {
-    try {
-
-        const from = sender || "abdussalammustapha07@gmail.com"
-
-        const msg = {
-            to: recipient,
-            from: from,
-            subject,
-            html: html,
-            text: text,
-            attachments,
-        }
+const mcMail = require('@mailchimp/mailchimp_transactional')('2486d29c9e57d102be870127d898a4ca-us21');
 
 
-        return sgMail.send(msg)
 
-    }
-    catch (error) {
-        console.log(error)
-    }
-}
+const sendMCMail = async ({ to, subject, html, attachments, text }) => {
+  try {
+    const response = await mcMail.users.ping({
+      message: {
+        subject: subject,
+        from_email: 'abdussalammustapha07@gmail.com', // Replace with your verified sender email
+        to: to,
+        html: html,
+      },
+    });
 
+    return response;
+  } catch (error) {
+    console.error(error);
+  }
+};
 
 
 exports.sendEmail = async (args) => {
-    if (process.env.NODE_ENV === "development") {
-        return new Promise.resolve();
-    }
-    else {
-        return sendSGMail(args)
-    }
-}
+  if (process.env.NODE_ENV !== 'development') {
+    return Promise.resolve();
+  } else {
+    return sendMCMail(args);
+  }
+};
